@@ -7,7 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -59,5 +64,21 @@ public class HomeController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
         }
+    }
+
+    private final Path uploadDir = Paths.get("uploads"); // or "/data/uploads" if using a disk
+
+    // ✅ List all uploaded files
+    @GetMapping("/files")
+    public ResponseEntity<List<String>> listFiles() throws IOException {
+        if (!Files.exists(uploadDir)) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        List<String> files = Files.list(uploadDir)
+                .map(path -> path.getFileName().toString())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(files);
     }
 }
